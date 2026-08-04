@@ -31,11 +31,19 @@ jobs:
       - name: Node-Abhängigkeiten installieren
         run: npm ci
 
-      - name: Gradle Wrapper ausführbar machen
-        run: chmod +x gradlew
+      - name: Gradle aus der Projektkonfiguration herunterladen
+        shell: bash
+        run: |
+          GRADLE_URL="$(grep '^distributionUrl=' gradle/wrapper/gradle-wrapper.properties | cut -d= -f2- | sed 's#\\#/#g')"
+          echo "Lade Gradle herunter: $GRADLE_URL"
+          curl --fail --location --silent --show-error "$GRADLE_URL" --output gradle.zip
+          unzip -q gradle.zip
+          GRADLE_BIN="$(find . -maxdepth 3 -type f -path './gradle-*/bin/gradle' | head -n 1)"
+          test -n "$GRADLE_BIN"
+          echo "GRADLE_BIN=$GRADLE_BIN" >> "$GITHUB_ENV"
 
       - name: Debug-APK bauen
-        run: ./gradlew assembleDebug
+        run: "$GRADLE_BIN --no-daemon assembleDebug"
 
       - name: Test-APK speichern
         uses: actions/upload-artifact@v4
