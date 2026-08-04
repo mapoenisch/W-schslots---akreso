@@ -34,7 +34,7 @@ jobs:
       - name: Gradle aus der Projektkonfiguration herunterladen
         shell: bash
         run: |
-          GRADLE_URL="$(grep '^distributionUrl=' gradle/wrapper/gradle-wrapper.properties | cut -d= -f2- | sed 's#\\#/#g')"
+          GRADLE_URL="$(grep '^distributionUrl=' gradle/wrapper/gradle-wrapper.properties | cut -d= -f2- | sed 's/\\//g')"
           echo "Lade Gradle herunter: $GRADLE_URL"
           curl --fail --location --silent --show-error "$GRADLE_URL" --output gradle.zip
           unzip -q gradle.zip
