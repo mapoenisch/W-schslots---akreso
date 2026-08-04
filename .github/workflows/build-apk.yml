@@ -1,0 +1,45 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build-debug-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v4
+
+      - name: Java 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Node.js 20 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Node-Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Gradle Wrapper ausführbar machen
+        run: chmod +x gradlew
+
+      - name: Debug-APK bauen
+        run: ./gradlew assembleDebug
+
+      - name: Test-APK speichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
